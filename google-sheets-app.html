@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sheets Editor</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a3e;
+    --accent: #4ade80;
+    --accent2: #22d3ee;
+    --accent3: #f59e0b;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --danger: #f43f5e;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(74, 222, 128, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(74, 222, 128, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Glow orbs */
+  body::after {
+    content: '';
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(74, 222, 128, 0.05) 0%, transparent 70%);
+    top: -200px;
+    right: -200px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28px 0 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  .logo-text {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+
+  .logo-text span { color: var(--accent); }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* Buttons */
+  .btn {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 18px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #0a0a0f;
+  }
+  .btn-primary:hover { background: #22c55e; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(74,222,128,0.3); }
+
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid rgba(244,63,94,0.3);
+  }
+  .btn-danger:hover { background: rgba(244,63,94,0.1); border-color: var(--danger); }
+
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+  /* Auth screen */
+  #auth-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 70vh;
+    text-align: center;
+    gap: 24px;
+  }
+
+  .auth-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 52px 48px;
+    max-width: 480px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .auth-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+
+  .auth-icon {
+    font-size: 52px;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .auth-title {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+  }
+
+  .auth-desc {
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 28px;
+    font-family: var(--mono);
+    font-weight: 300;
+  }
+
+  /* Config section */
+  #config-section {
+    margin-bottom: 28px;
+  }
+
+  .config-fields {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 20px;
+    text-align: left;
+  }
+
+  .field-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .field-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .field-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(74,222,128,0.1); }
+  .field-input::placeholder { color: var(--text-muted); }
+
+  .help-link {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent2);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 16px;
+    opacity: 0.8;
+  }
+  .help-link:hover { opacity: 1; }
+
+  /* Main app */
+  #main-app { display: none; }
+
+  /* Top bar */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 12px;
+    flex: 1;
+  }
+
+  .toolbar-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .toolbar-input {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    outline: none;
+    flex: 1;
+    min-width: 180px;
+  }
+  .toolbar-input::placeholder { color: var(--text-muted); }
+
+  /* Status bar */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding: 10px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+  .status-dot.connected { background: var(--accent); box-shadow: 0 0 8px var(--accent); animation: pulse 2s infinite; }
+  .status-dot.loading { background: var(--accent3); animation: pulse 1s infinite; }
+  .status-dot.error { background: var(--danger); }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  #status-text { color: var(--text-muted); flex: 1; }
+
+  .sheet-info {
+    color: var(--accent);
+    font-size: 11px;
+  }
+
+  /* Table */
+  .table-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .table-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .table-title {
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .table-badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 400;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 99px;
+    color: var(--text-muted);
+  }
+
+  .table-actions { display: flex; gap: 8px; }
+
+  .table-wrapper {
+    overflow: auto;
+    max-height: 500px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+
+  thead { position: sticky; top: 0; z-index: 10; }
+
+  thead th {
+    background: var(--surface2);
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  thead th:first-child {
+    width: 48px;
+    text-align: center;
+    color: var(--border);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(42,42,62,0.5);
+    transition: background 0.15s;
+  }
+  tbody tr:hover { background: rgba(74,222,128,0.03); }
+  tbody tr:last-child { border-bottom: none; }
+
+  td {
+    padding: 0;
+  }
+
+  td.row-num {
+    padding: 10px 14px;
+    text-align: center;
+    color: var(--border);
+    font-size: 11px;
+    width: 48px;
+  }
+
+  .cell-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 10px 14px;
+    outline: none;
+    min-width: 120px;
+    transition: background 0.15s;
+  }
+  .cell-input:focus {
+    background: rgba(74,222,128,0.06);
+    box-shadow: inset 0 0 0 1px rgba(74,222,128,0.3);
+  }
+  .cell-input.modified { color: var(--accent3); }
+
+  /* Empty state */
+  .empty-state {
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+
+  .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+
+  /* Range input */
+  .range-section {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .range-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 14px;
+  }
+
+  .range-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .range-input {
+    background: transparent;
+    border: none;
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    outline: none;
+    width: 140px;
+  }
+  .range-input::placeholder { color: var(--text-muted); font-weight: 300; }
+
+  /* Notification */
+  .notification {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 13px;
+    font-family: var(--mono);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 1000;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    max-width: 360px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  .notification.show { transform: translateY(0); opacity: 1; }
+  .notification.success { border-color: rgba(74,222,128,0.3); }
+  .notification.error { border-color: rgba(244,63,94,0.3); }
+  .notification-icon { font-size: 18px; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+  /* Loading spinner */
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(74,222,128,0.2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .step-hint {
+    background: rgba(34, 211, 238, 0.06);
+    border: 1px solid rgba(34, 211, 238, 0.15);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent2);
+    text-align: left;
+    line-height: 1.7;
+    margin-top: 16px;
+  }
+  .step-hint strong { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">📊</div>
+      <div class="logo-text">Sheets<span>Editor</span></div>
+    </div>
+    <div class="header-right">
+      <span id="user-name" style="font-size:13px;color:var(--text-muted);font-family:var(--mono);display:none;"></span>
+      <button class="btn btn-secondary" id="sign-out-btn" style="display:none;" onclick="signOut()">↩ Выйти</button>
+    </div>
+  </header>
+
+  <!-- Auth Screen -->
+  <div id="auth-screen">
+    <div class="auth-card">
+      <span class="auth-icon">🔑</span>
+      <div class="auth-title">Настройка доступа</div>
+      <div class="auth-desc">Введите Client ID от Google OAuth 2.0 и API Key для подключения к Google Sheets API</div>
+
+      <div id="config-section">
+        <div class="config-fields">
+          <div>
+            <label class="field-label">Client ID</label>
+            <input class="field-input" id="client-id-input" type="text" placeholder="xxxxxxxx.apps.googleusercontent.com" />
+          </div>
+          <div>
+            <label class="field-label">API Key</label>
+            <input class="field-input" id="api-key-input" type="text" placeholder="AIzaSy..." />
+          </div>
+        </div>
+
+        <a class="help-link" href="https://console.cloud.google.com/apis/credentials" target="_blank">
+          🔗 Получить ключи в Google Cloud Console
+        </a>
+
+        <div style="margin-bottom: 16px;">
+          <button class="btn btn-primary" onclick="initAndAuth()" style="width:100%;justify-content:center;">
+            ⚡ Подключиться через Google
+          </button>
+        </div>
+
+        <div class="step-hint">
+          <strong>Как настроить:</strong><br>
+          1. Создайте проект в <a href="https://console.cloud.google.com" target="_blank" style="color:var(--accent2)">Google Cloud Console</a><br>
+          2. Включите <strong>Google Sheets API</strong><br>
+          3. Создайте <strong>OAuth 2.0 Client ID</strong> (тип: Web) и <strong>API Key</strong><br>
+          4. В настройках OAuth добавьте <code style="color:var(--accent)">${location.origin}</code> в Authorized Origins<br>
+          5. Вставьте ключи выше и нажмите «Подключиться»
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div id="main-app">
+    <div class="toolbar">
+      <div class="toolbar-group">
+        <span class="toolbar-label">ID таблицы</span>
+        <input class="toolbar-input" id="spreadsheet-id" placeholder="Вставьте ID из URL Google Sheets..." />
+      </div>
+      <button class="btn btn-secondary" onclick="loadSheet()">⟳ Загрузить</button>
+      <button class="btn btn-primary" onclick="saveChanges()" id="save-btn" disabled>💾 Сохранить</button>
+    </div>
+
+    <div class="range-section">
+      <div class="range-group">
+        <span class="range-label">Лист</span>
+        <input class="range-input" id="sheet-name" placeholder="Sheet1" value="Sheet1" style="width:100px;" />
+      </div>
+      <div class="range-group">
+        <span class="range-label">Диапазон</span>
+        <input class="range-input" id="range-input" placeholder="A1:Z100" value="A1:Z100" />
+      </div>
+      <button class="btn btn-secondary" onclick="loadRange()">→ Применить</button>
+    </div>
+
+    <div class="status-bar">
+      <div class="status-dot" id="status-dot"></div>
+      <span id="status-text">Введите ID таблицы для начала работы</span>
+      <span class="sheet-info" id="sheet-info"></span>
+    </div>
+
+    <div class="table-container">
+      <div class="table-header-bar">
+        <div class="table-title">
+          📋 Данные таблицы
+          <span class="table-badge" id="cell-count">0 ячеек</span>
+        </div>
+        <div class="table-actions">
+          <button class="btn btn-secondary" onclick="addRow()" id="add-row-btn" disabled>+ Строка</button>
+          <button class="btn btn-danger" onclick="clearModified()" id="clear-btn" style="display:none;">✕ Сбросить</button>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <div id="table-container">
+          <div class="empty-state">
+            <div class="empty-icon">📊</div>
+            Подключитесь и загрузите таблицу
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="notification" id="notification">
+  <span class="notification-icon" id="notif-icon">✓</span>
+  <span id="notif-text"></span>
+</div>
+
+<script>
+const CLIENT_SCOPE = 'https://www.googleapis.com/auth/spreadsheets';
+let tokenClient, gapiReady = false, tokenReady = false;
+let currentData = [], modifiedCells = new Set();
+let currentRange = '', currentSheetId = '';
+
+function showNotif(msg, type='success') {
+  const n = document.getElementById('notification');
+  document.getElementById('notif-icon').textContent = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+  document.getElementById('notif-text').textContent = msg;
+  n.className = 'notification show ' + type;
+  setTimeout(() => n.className = 'notification', 3000);
+}
+
+function setStatus(text, state='') {
+  document.getElementById('status-text').textContent = text;
+  const dot = document.getElementById('status-dot');
+  dot.className = 'status-dot ' + state;
+}
+
+async function initAndAuth() {
+  const clientId = document.getElementById('client-id-input').value.trim();
+  const apiKey = document.getElementById('api-key-input').value.trim();
+
+  if (!clientId || !apiKey) {
+    showNotif('Введите Client ID и API Key', 'error');
+    return;
+  }
+
+  localStorage.setItem('gs_client_id', clientId);
+  localStorage.setItem('gs_api_key', apiKey);
+
+  loadGoogleAPIs(clientId, apiKey);
+}
+
+function loadGoogleAPIs(clientId, apiKey) {
+  const gapiScript = document.createElement('script');
+  gapiScript.src = 'https://apis.google.com/js/api.js';
+  gapiScript.onload = () => {
+    gapi.load('client', async () => {
+      await gapi.client.init({ apiKey, discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'] });
+      gapiReady = true;
+      tryAuth(clientId);
+    });
+  };
+  document.head.appendChild(gapiScript);
+
+  const gisScript = document.createElement('script');
+  gisScript.src = 'https://accounts.google.com/gsi/client';
+  gisScript.onload = () => {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: clientId,
+      scope: CLIENT_SCOPE,
+      callback: (resp) => {
+        if (resp.error) { showNotif('Ошибка авторизации: ' + resp.error, 'error'); return; }
+        tokenReady = true;
+        showMainApp();
+      }
+    });
+  };
+  document.head.appendChild(gisScript);
+}
+
+function tryAuth(clientId) {
+  if (tokenClient) {
+    tokenClient.requestAccessToken({ prompt: 'consent' });
+  }
+}
+
+function showMainApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('main-app').style.display = 'block';
+  document.getElementById('sign-out-btn').style.display = 'inline-flex';
+  setStatus('Авторизован. Введите ID таблицы.', 'connected');
+  showNotif('Успешно подключено к Google!');
+}
+
+function signOut() {
+  google.accounts.oauth2.revoke(gapi.client.getToken()?.access_token, () => {});
+  gapi.client.setToken(null);
+  tokenReady = false;
+  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('main-app').style.display = 'none';
+  document.getElementById('sign-out-btn').style.display = 'none';
+}
+
+async function loadSheet() {
+  const id = document.getElementById('spreadsheet-id').value.trim();
+  if (!id) { showNotif('Введите ID таблицы', 'error'); return; }
+  if (!tokenReady) { showNotif('Сначала авторизуйтесь', 'error'); return; }
+
+  currentSheetId = extractSheetId(id);
+  document.getElementById('spreadsheet-id').value = currentSheetId;
+  await loadRange();
+}
+
+function extractSheetId(input) {
+  const m = input.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  return m ? m[1] : input;
+}
+
+async function loadRange() {
+  if (!currentSheetId) { showNotif('Сначала загрузите таблицу', 'error'); return; }
+  const sheet = document.getElementById('sheet-name').value || 'Sheet1';
+  const range = document.getElementById('range-input').value || 'A1:Z100';
+  currentRange = `${sheet}!${range}`;
+
+  setStatus('Загрузка данных...', 'loading');
+  try {
+    const res = await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: currentSheetId,
+      range: currentRange,
+    });
+    currentData = res.result.values || [];
+    modifiedCells.clear();
+    renderTable();
+    const cells = currentData.reduce((s, r) => s + r.length, 0);
+    setStatus(`Загружено: ${currentRange}`, 'connected');
+    document.getElementById('sheet-info').textContent = `${currentData.length} строк · ${cells} ячеек`;
+    document.getElementById('cell-count').textContent = `${cells} ячеек`;
+    document.getElementById('add-row-btn').disabled = false;
+  } catch(e) {
+    setStatus('Ошибка загрузки', 'error');
+    showNotif('Ошибка: ' + (e.result?.error?.message || e.message), 'error');
+  }
+}
+
+function renderTable() {
+  const container = document.getElementById('table-container');
+  if (!currentData.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div>Данные не найдены в указанном диапазоне</div>';
+    return;
+  }
+
+  const maxCols = Math.max(...currentData.map(r => r.length));
+  const cols = Array.from({length: maxCols}, (_, i) => colLetter(i));
+
+  let html = '<table><thead><tr><th>#</th>';
+  cols.forEach(c => html += `<th>${c}</th>`);
+  html += '</tr></thead><tbody>';
+
+  currentData.forEach((row, ri) => {
+    html += `<tr><td class="row-num">${ri + 1}</td>`;
+    for (let ci = 0; ci < maxCols; ci++) {
+      const val = (row[ci] ?? '').replace(/"/g, '&quot;');
+      html += `<td><input class="cell-input" data-r="${ri}" data-c="${ci}" value="${val}" oninput="onCellChange(this)" /></td>`;
+    }
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function colLetter(i) {
+  let l = '';
+  i++;
+  while (i > 0) {
+    l = String.fromCharCode(64 + (i % 26 || 26)) + l;
+    i = Math.floor((i - 1) / 26);
+  }
+  return l;
+}
+
+function onCellChange(input) {
+  const r = +input.dataset.r, c = +input.dataset.c;
+  const key = `${r},${c}`;
+  if (!currentData[r]) currentData[r] = [];
+  currentData[r][c] = input.value;
+  modifiedCells.add(key);
+  input.classList.add('modified');
+  document.getElementById('save-btn').disabled = false;
+  document.getElementById('clear-btn').style.display = 'inline-flex';
+}
+
+function addRow() {
+  currentData.push(Array(Math.max(...currentData.map(r => r.length), 1)).fill(''));
+  renderTable();
+}
+
+function clearModified() {
+  loadRange();
+  document.getElementById('clear-btn').style.display = 'none';
+  document.getElementById('save-btn').disabled = true;
+}
+
+async function saveChanges() {
+  if (!currentSheetId) return;
+  setStatus('Сохранение...', 'loading');
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+
+  try {
+    await gapi.client.sheets.spreadsheets.values.update({
+      spreadsheetId: currentSheetId,
+      range: currentRange,
+      valueInputOption: 'USER_ENTERED',
+      resource: { values: currentData },
+    });
+    modifiedCells.clear();
+    document.querySelectorAll('.cell-input.modified').forEach(el => el.classList.remove('modified'));
+    document.getElementById('clear-btn').style.display = 'none';
+    setStatus('Сохранено успешно · ' + new Date().toLocaleTimeString(), 'connected');
+    showNotif('Данные успешно сохранены в Google Sheets!');
+  } catch(e) {
+    setStatus('Ошибка сохранения', 'error');
+    showNotif('Ошибка сохранения: ' + (e.result?.error?.message || e.message), 'error');
+    btn.disabled = false;
+  }
+}
+
+// Restore saved config
+window.addEventListener('DOMContentLoaded', () => {
+  const cid = localStorage.getItem('gs_client_id');
+  const key = localStorage.getItem('gs_api_key');
+  if (cid) document.getElementById('client-id-input').value = cid;
+  if (key) document.getElementById('api-key-input').value = key;
+});
+</script>
+</body>
+</html>
