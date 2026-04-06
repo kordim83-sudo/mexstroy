@@ -3,877 +3,1244 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sheets Editor</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<title>Замечания — Pro Editor</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-  :root {
-    --bg: #0a0a0f;
-    --surface: #12121a;
-    --surface2: #1a1a26;
-    --border: #2a2a3e;
-    --accent: #4ade80;
-    --accent2: #22d3ee;
-    --accent3: #f59e0b;
-    --text: #e2e8f0;
-    --text-muted: #64748b;
-    --danger: #f43f5e;
-    --mono: 'JetBrains Mono', monospace;
-    --sans: 'Syne', sans-serif;
-  }
+:root {
+  --bg: #f0f2f5;
+  --white: #ffffff;
+  --surface: #ffffff;
+  --surface2: #f7f8fa;
+  --border: #e4e8ef;
+  --border2: #d0d7e3;
+  --accent: #2563eb;
+  --accent-light: #eff4ff;
+  --accent2: #0ea5e9;
+  --success: #10b981;
+  --success-light: #ecfdf5;
+  --warning: #f59e0b;
+  --warning-light: #fffbeb;
+  --danger: #ef4444;
+  --danger-light: #fef2f2;
+  --text: #111827;
+  --text2: #374151;
+  --text-muted: #6b7280;
+  --text-light: #9ca3af;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+  --shadow-lg: 0 20px 60px rgba(0,0,0,0.12), 0 8px 20px rgba(0,0,0,0.06);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+}
 
-  /* Background grid */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(74, 222, 128, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(74, 222, 128, 0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
+/* ── HEADER ── */
+.header {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow);
+}
 
-  /* Glow orbs */
-  body::after {
-    content: '';
-    position: fixed;
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle, rgba(74, 222, 128, 0.05) 0%, transparent 70%);
-    top: -200px;
-    right: -200px;
-    pointer-events: none;
-    z-index: 0;
-  }
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Unbounded', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
 
-  .app {
-    position: relative;
-    z-index: 1;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 24px;
-  }
+.logo-badge {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, #2563eb, #0ea5e9);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+}
 
-  /* Header */
-  header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 28px 0 24px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 32px;
-  }
+.logo span { color: var(--accent); }
 
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+.header-right { display: flex; align-items: center; gap: 10px; }
 
-  .logo-icon {
-    width: 36px;
-    height: 36px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-  }
+/* ── BUTTONS ── */
+.btn {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #1d4ed8; box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
+.btn-secondary { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+.btn-success { background: var(--success); color: #fff; }
+.btn-success:hover { background: #059669; box-shadow: 0 4px 12px rgba(16,185,129,0.3); }
+.btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid transparent; }
+.btn-ghost:hover { background: var(--surface2); color: var(--text); }
+.btn-danger-ghost { background: transparent; color: var(--danger); border: 1px solid var(--border); }
+.btn-danger-ghost:hover { background: var(--danger-light); border-color: var(--danger); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-sm { padding: 5px 11px; font-size: 12px; }
+.btn-icon { padding: 8px; width: 36px; height: 36px; justify-content: center; }
 
-  .logo-text {
-    font-size: 20px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    color: var(--text);
-  }
+/* ── AUTH SCREEN ── */
+#auth-screen {
+  display: flex; align-items: center; justify-content: center;
+  min-height: calc(100vh - 60px);
+  padding: 24px;
+}
 
-  .logo-text span { color: var(--accent); }
+.auth-card {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 48px 44px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+}
 
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+.auth-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 28px;
+}
 
-  /* Buttons */
-  .btn {
-    font-family: var(--sans);
-    font-size: 13px;
-    font-weight: 600;
-    padding: 9px 18px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.3px;
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-  }
+.auth-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
 
-  .btn-primary {
-    background: var(--accent);
-    color: #0a0a0f;
-  }
-  .btn-primary:hover { background: #22c55e; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(74,222,128,0.3); }
+.step-num {
+  width: 22px; height: 22px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
 
-  .btn-secondary {
-    background: var(--surface2);
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+.step-text { font-size: 12.5px; color: var(--text2); line-height: 1.5; }
+.step-text a { color: var(--accent); text-decoration: none; }
+.step-text a:hover { text-decoration: underline; }
+.step-text code { background: var(--border); padding: 1px 5px; border-radius: 4px; font-size: 11px; }
 
-  .btn-danger {
-    background: transparent;
-    color: var(--danger);
-    border: 1px solid rgba(244,63,94,0.3);
-  }
-  .btn-danger:hover { background: rgba(244,63,94,0.1); border-color: var(--danger); }
+.auth-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  letter-spacing: -0.5px;
+}
+.auth-sub { color: var(--text-muted); font-size: 13px; margin-bottom: 28px; line-height: 1.5; }
 
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.field-group { margin-bottom: 14px; }
+.field-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; display: block; }
+.field-input {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-family: 'Inter', monospace;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--white);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.field-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+.field-input::placeholder { color: var(--text-light); }
 
-  /* Auth screen */
-  #auth-screen {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 70vh;
-    text-align: center;
-    gap: 24px;
-  }
+/* ── MAIN LAYOUT ── */
+#main-app { display: none; }
 
-  .auth-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 52px 48px;
-    max-width: 480px;
-    width: 100%;
-    position: relative;
-    overflow: hidden;
-  }
+.app-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  grid-template-rows: auto 1fr;
+  min-height: calc(100vh - 60px);
+}
 
-  .auth-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-  }
+/* ── CONNECTION BAR ── */
+.conn-bar {
+  grid-column: 1 / -1;
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
 
-  .auth-icon {
-    font-size: 52px;
-    margin-bottom: 16px;
-    display: block;
-  }
+.conn-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 200px;
+}
 
-  .auth-title {
-    font-size: 28px;
-    font-weight: 800;
-    margin-bottom: 10px;
-    letter-spacing: -0.5px;
-  }
+.conn-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  white-space: nowrap;
+}
 
-  .auth-desc {
-    color: var(--text-muted);
-    font-size: 14px;
-    line-height: 1.6;
-    margin-bottom: 28px;
-    font-family: var(--mono);
-    font-weight: 300;
-  }
+.conn-input {
+  flex: 1;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+  font-size: 13px;
+  font-family: 'Inter', monospace;
+  color: var(--text);
+  background: var(--surface2);
+  outline: none;
+  transition: all 0.15s;
+}
+.conn-input:focus { border-color: var(--accent); background: var(--white); box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
+.conn-input::placeholder { color: var(--text-light); }
 
-  /* Config section */
-  #config-section {
-    margin-bottom: 28px;
-  }
+.status-pill {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+.status-pill.ok { background: var(--success-light); border-color: rgba(16,185,129,0.2); color: var(--success); }
+.status-pill.loading { background: var(--warning-light); border-color: rgba(245,158,11,0.2); color: var(--warning); }
+.status-pill.err { background: var(--danger-light); border-color: rgba(239,68,68,0.2); color: var(--danger); }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.status-pill.ok .status-dot { animation: pulse2 2s infinite; }
+@keyframes pulse2 { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-  .config-fields {
-    display: grid;
-    gap: 12px;
-    margin-bottom: 20px;
-    text-align: left;
-  }
+/* ── SIDEBAR (filters) ── */
+.sidebar {
+  background: var(--white);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 0;
+}
 
-  .field-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-muted);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-    display: block;
-  }
+.sidebar-header {
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: var(--white);
+  z-index: 10;
+}
 
-  .field-input {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .field-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(74,222,128,0.1); }
-  .field-input::placeholder { color: var(--text-muted); }
+.sidebar-title {
+  font-weight: 600;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
 
-  .help-link {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--accent2);
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-bottom: 16px;
-    opacity: 0.8;
-  }
-  .help-link:hover { opacity: 1; }
+.filter-count {
+  background: var(--accent);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 99px;
+  display: none;
+}
+.filter-count.show { display: inline; }
 
-  /* Main app */
-  #main-app { display: none; }
+.filters-list { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
 
-  /* Top bar */
-  .toolbar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-  }
+.filter-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.filter-card.active { border-color: var(--accent); background: var(--accent-light); }
 
-  .toolbar-group {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 8px 12px;
-    flex: 1;
-  }
+.filter-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  cursor: pointer;
+  user-select: none;
+}
 
-  .toolbar-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-muted);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
+.filter-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 
-  .toolbar-input {
-    background: transparent;
-    border: none;
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 13px;
-    outline: none;
-    flex: 1;
-    min-width: 180px;
-  }
-  .toolbar-input::placeholder { color: var(--text-muted); }
+.filter-card.active .filter-name { color: var(--accent); }
 
-  /* Status bar */
-  .status-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 20px;
-    padding: 10px 16px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    font-family: var(--mono);
-    font-size: 12px;
-  }
+.filter-arrow {
+  font-size: 10px;
+  color: var(--text-light);
+  transition: transform 0.2s;
+}
+.filter-card.open .filter-arrow { transform: rotate(180deg); }
 
-  .status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--text-muted);
-    flex-shrink: 0;
-    transition: background 0.3s;
-  }
-  .status-dot.connected { background: var(--accent); box-shadow: 0 0 8px var(--accent); animation: pulse 2s infinite; }
-  .status-dot.loading { background: var(--accent3); animation: pulse 1s infinite; }
-  .status-dot.error { background: var(--danger); }
+.filter-body { display: none; padding: 0 12px 10px; }
+.filter-card.open .filter-body { display: block; }
 
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
+.filter-search {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  color: var(--text);
+  background: var(--white);
+  outline: none;
+  margin-bottom: 6px;
+}
+.filter-search:focus { border-color: var(--accent); }
 
-  #status-text { color: var(--text-muted); flex: 1; }
+.filter-options { max-height: 160px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
 
-  .sheet-info {
-    color: var(--accent);
-    font-size: 11px;
-  }
+.filter-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.1s;
+  font-size: 12px;
+  color: var(--text2);
+}
+.filter-option:hover { background: rgba(37,99,235,0.06); }
+.filter-option input[type=checkbox] { accent-color: var(--accent); width: 13px; height: 13px; cursor: pointer; flex-shrink: 0; }
 
-  /* Table */
-  .table-container {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    overflow: hidden;
-    margin-bottom: 24px;
-  }
+.filter-text-input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--text);
+  background: var(--white);
+  outline: none;
+}
+.filter-text-input:focus { border-color: var(--accent); }
 
-  .table-header-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--border);
-  }
+.filter-active-val {
+  font-size: 10px;
+  color: var(--accent);
+  font-weight: 600;
+  background: rgba(37,99,235,0.1);
+  padding: 1px 6px;
+  border-radius: 99px;
+}
 
-  .table-title {
-    font-size: 14px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+/* ── MAIN CONTENT ── */
+.main-content { overflow: hidden; display: flex; flex-direction: column; }
 
-  .table-badge {
-    font-family: var(--mono);
-    font-size: 11px;
-    font-weight: 400;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    padding: 2px 8px;
-    border-radius: 99px;
-    color: var(--text-muted);
-  }
+/* ── RESULTS BAR ── */
+.results-bar {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
 
-  .table-actions { display: flex; gap: 8px; }
+.results-count {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.results-count strong { color: var(--text); font-weight: 600; }
 
-  .table-wrapper {
-    overflow: auto;
-    max-height: 500px;
-  }
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+}
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-family: var(--mono);
-    font-size: 13px;
-  }
+.filter-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--accent-light);
+  border: 1px solid rgba(37,99,235,0.2);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 99px;
+}
 
-  thead { position: sticky; top: 0; z-index: 10; }
+.filter-tag-x {
+  cursor: pointer;
+  opacity: 0.6;
+  font-size: 13px;
+  line-height: 1;
+}
+.filter-tag-x:hover { opacity: 1; }
 
-  thead th {
-    background: var(--surface2);
-    padding: 10px 14px;
-    text-align: left;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-muted);
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-    user-select: none;
-  }
+/* ── RECORDS AREA ── */
+.records-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
-  thead th:first-child {
-    width: 48px;
-    text-align: center;
-    color: var(--border);
-  }
+/* ── RECORD CARD (vertical layout) ── */
+.record-card {
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  animation: slideIn 0.2s ease;
+}
+@keyframes slideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
 
-  tbody tr {
-    border-bottom: 1px solid rgba(42,42,62,0.5);
-    transition: background 0.15s;
-  }
-  tbody tr:hover { background: rgba(74,222,128,0.03); }
-  tbody tr:last-child { border-bottom: none; }
+.record-card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); }
+.record-card.modified { border-color: var(--warning); }
+.record-card.saved { border-color: var(--success); }
 
-  td {
-    padding: 0;
-  }
+.record-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
 
-  td.row-num {
-    padding: 10px 14px;
-    text-align: center;
-    color: var(--border);
-    font-size: 11px;
-    width: 48px;
-  }
+.record-num {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
 
-  .cell-input {
-    width: 100%;
-    background: transparent;
-    border: none;
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 13px;
-    padding: 10px 14px;
-    outline: none;
-    min-width: 120px;
-    transition: background 0.15s;
-  }
-  .cell-input:focus {
-    background: rgba(74,222,128,0.06);
-    box-shadow: inset 0 0 0 1px rgba(74,222,128,0.3);
-  }
-  .cell-input.modified { color: var(--accent3); }
+.record-actions { display: flex; gap: 6px; }
 
-  /* Empty state */
-  .empty-state {
-    padding: 60px 20px;
-    text-align: center;
-    color: var(--text-muted);
-    font-family: var(--mono);
-    font-size: 13px;
-  }
+.record-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
 
-  .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+.record-field {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.record-field:hover { background: var(--surface2); }
 
-  /* Range input */
-  .range-section {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-  }
+.field-col-name {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 5px;
+}
 
-  .range-group {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 8px 14px;
-  }
+.field-value-input {
+  width: 100%;
+  border: 1.5px solid transparent;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  color: var(--text);
+  background: transparent;
+  outline: none;
+  transition: all 0.15s;
+  resize: none;
+  min-height: 30px;
+}
+.field-value-input:focus {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
+}
+.field-value-input.changed { color: var(--warning); font-weight: 500; }
 
-  .range-label {
-    font-size: 11px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    font-weight: 600;
-    white-space: nowrap;
-  }
+/* Status badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badge-green { background: var(--success-light); color: var(--success); }
+.badge-yellow { background: var(--warning-light); color: var(--warning); }
+.badge-red { background: var(--danger-light); color: var(--danger); }
+.badge-blue { background: var(--accent-light); color: var(--accent); }
+.badge-gray { background: var(--surface2); color: var(--text-muted); }
 
-  .range-input {
-    background: transparent;
-    border: none;
-    color: var(--accent);
-    font-family: var(--mono);
-    font-size: 13px;
-    font-weight: 500;
-    outline: none;
-    width: 140px;
-  }
-  .range-input::placeholder { color: var(--text-muted); font-weight: 300; }
+/* ── EMPTY / LOADING ── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+  color: var(--text-muted);
+}
+.empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+.empty-title { font-size: 16px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+.empty-sub { font-size: 13px; color: var(--text-muted); }
 
-  /* Notification */
-  .notification {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 14px 20px;
-    font-size: 13px;
-    font-family: var(--mono);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    z-index: 1000;
-    transform: translateY(80px);
-    opacity: 0;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    max-width: 360px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-  }
-  .notification.show { transform: translateY(0); opacity: 1; }
-  .notification.success { border-color: rgba(74,222,128,0.3); }
-  .notification.error { border-color: rgba(244,63,94,0.3); }
-  .notification-icon { font-size: 18px; }
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
 
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+/* Spinner */
+.spin {
+  width: 20px; height: 20px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Loading spinner */
-  .spinner {
-    width: 16px; height: 16px;
-    border: 2px solid rgba(74,222,128,0.2);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    flex-shrink: 0;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* ── SAVE ALL BAR ── */
+.save-bar {
+  background: var(--white);
+  border-top: 1px solid var(--border);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
 
-  .step-hint {
-    background: rgba(34, 211, 238, 0.06);
-    border: 1px solid rgba(34, 211, 238, 0.15);
-    border-radius: 10px;
-    padding: 14px 16px;
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--accent2);
-    text-align: left;
-    line-height: 1.7;
-    margin-top: 16px;
-  }
-  .step-hint strong { color: var(--accent); }
+.save-info { font-size: 13px; color: var(--text-muted); }
+.save-info strong { color: var(--warning); }
+
+/* ── NOTIFICATION ── */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--text);
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 9999;
+  transform: translateY(80px);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow: var(--shadow-lg);
+  max-width: 340px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { background: var(--success); }
+.toast.error { background: var(--danger); }
+.toast.warning { background: var(--warning); }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-light); }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 500;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: var(--shadow-lg);
+  animation: modalIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes modalIn { from{opacity:0;transform:scale(0.9)} to{opacity:1;transform:scale(1)} }
+.modal-title { font-family:'Unbounded',sans-serif; font-size:16px; font-weight:600; margin-bottom:8px; }
+.modal-sub { font-size:13px; color:var(--text-muted); margin-bottom:24px; line-height:1.6; }
+.modal-actions { display:flex; gap:8px; justify-content:flex-end; }
+
+@media(max-width:768px){
+  .app-layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .record-fields { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
 
-<div class="app">
-  <header>
-    <div class="logo">
-      <div class="logo-icon">📊</div>
-      <div class="logo-text">Sheets<span>Editor</span></div>
-    </div>
-    <div class="header-right">
-      <span id="user-name" style="font-size:13px;color:var(--text-muted);font-family:var(--mono);display:none;"></span>
-      <button class="btn btn-secondary" id="sign-out-btn" style="display:none;" onclick="signOut()">↩ Выйти</button>
-    </div>
-  </header>
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">
+    <div class="logo-badge">📋</div>
+    Замечания<span>Pro</span>
+  </div>
+  <div class="header-right">
+    <span id="user-label" style="font-size:12px;color:var(--text-muted);display:none;"></span>
+    <button class="btn btn-ghost btn-sm" id="sign-out-btn" style="display:none;" onclick="signOut()">↩ Выйти</button>
+  </div>
+</div>
 
-  <!-- Auth Screen -->
-  <div id="auth-screen">
-    <div class="auth-card">
-      <span class="auth-icon">🔑</span>
-      <div class="auth-title">Настройка доступа</div>
-      <div class="auth-desc">Введите Client ID от Google OAuth 2.0 и API Key для подключения к Google Sheets API</div>
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-title">Подключение к Google Sheets</div>
+    <div class="auth-sub">Введите ключи из Google Cloud Console для начала работы</div>
 
-      <div id="config-section">
-        <div class="config-fields">
-          <div>
-            <label class="field-label">Client ID</label>
-            <input class="field-input" id="client-id-input" type="text" placeholder="xxxxxxxx.apps.googleusercontent.com" />
-          </div>
-          <div>
-            <label class="field-label">API Key</label>
-            <input class="field-input" id="api-key-input" type="text" placeholder="AIzaSy..." />
-          </div>
-        </div>
-
-        <a class="help-link" href="https://console.cloud.google.com/apis/credentials" target="_blank">
-          🔗 Получить ключи в Google Cloud Console
-        </a>
-
-        <div style="margin-bottom: 16px;">
-          <button class="btn btn-primary" onclick="initAndAuth()" style="width:100%;justify-content:center;">
-            ⚡ Подключиться через Google
-          </button>
-        </div>
-
-        <div class="step-hint">
-          <strong>Как настроить:</strong><br>
-          1. Создайте проект в <a href="https://console.cloud.google.com" target="_blank" style="color:var(--accent2)">Google Cloud Console</a><br>
-          2. Включите <strong>Google Sheets API</strong><br>
-          3. Создайте <strong>OAuth 2.0 Client ID</strong> (тип: Web) и <strong>API Key</strong><br>
-          4. В настройках OAuth добавьте <code style="color:var(--accent)">${location.origin}</code> в Authorized Origins<br>
-          5. Вставьте ключи выше и нажмите «Подключиться»
-        </div>
+    <div class="auth-steps">
+      <div class="auth-step">
+        <div class="step-num">1</div>
+        <div class="step-text">Включите <strong>Google Sheets API</strong> в <a href="https://console.cloud.google.com/apis/library" target="_blank">Google Cloud Console → Library</a></div>
       </div>
+      <div class="auth-step">
+        <div class="step-num">2</div>
+        <div class="step-text">Создайте <strong>API Key</strong> и <strong>OAuth 2.0 Client ID</strong> (тип: Web) в <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Credentials</a></div>
+      </div>
+      <div class="auth-step">
+        <div class="step-num">3</div>
+        <div class="step-text">В OAuth Client ID добавьте <code id="origin-hint"></code> в Authorized JavaScript Origins</div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Client ID</label>
+      <input class="field-input" id="client-id-input" placeholder="xxxxxxxx.apps.googleusercontent.com" />
+    </div>
+    <div class="field-group">
+      <label class="field-label">API Key</label>
+      <input class="field-input" id="api-key-input" placeholder="AIzaSy..." />
+    </div>
+    <button class="btn btn-primary" onclick="initAuth()" style="width:100%;justify-content:center;margin-top:8px;">
+      ⚡ Войти через Google
+    </button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="main-app">
+  <!-- Connection Bar -->
+  <div class="conn-bar">
+    <div class="conn-group">
+      <span class="conn-label">ID таблицы</span>
+      <input class="conn-input" id="spreadsheet-id" placeholder="Вставьте ID из URL Google Sheets..." style="max-width:420px;" />
+    </div>
+    <div class="conn-group" style="flex:0;gap:8px;">
+      <span class="conn-label">Лист</span>
+      <input class="conn-input" id="sheet-name" value="Sheet1" style="width:120px;" />
+    </div>
+    <div class="conn-group" style="flex:0;gap:8px;">
+      <span class="conn-label">Диапазон</span>
+      <input class="conn-input" id="range-input" value="A1:Z500" style="width:110px;" />
+    </div>
+    <button class="btn btn-primary" onclick="loadData()">⟳ Загрузить</button>
+    <div class="status-pill" id="status-pill">
+      <div class="status-dot"></div>
+      <span id="status-text">Не загружено</span>
     </div>
   </div>
 
-  <!-- Main App -->
-  <div id="main-app">
-    <div class="toolbar">
-      <div class="toolbar-group">
-        <span class="toolbar-label">ID таблицы</span>
-        <input class="toolbar-input" id="spreadsheet-id" placeholder="Вставьте ID из URL Google Sheets..." />
-      </div>
-      <button class="btn btn-secondary" onclick="loadSheet()">⟳ Загрузить</button>
-      <button class="btn btn-primary" onclick="saveChanges()" id="save-btn" disabled>💾 Сохранить</button>
-    </div>
-
-    <div class="range-section">
-      <div class="range-group">
-        <span class="range-label">Лист</span>
-        <input class="range-input" id="sheet-name" placeholder="Sheet1" value="Sheet1" style="width:100px;" />
-      </div>
-      <div class="range-group">
-        <span class="range-label">Диапазон</span>
-        <input class="range-input" id="range-input" placeholder="A1:Z100" value="A1:Z100" />
-      </div>
-      <button class="btn btn-secondary" onclick="loadRange()">→ Применить</button>
-    </div>
-
-    <div class="status-bar">
-      <div class="status-dot" id="status-dot"></div>
-      <span id="status-text">Введите ID таблицы для начала работы</span>
-      <span class="sheet-info" id="sheet-info"></span>
-    </div>
-
-    <div class="table-container">
-      <div class="table-header-bar">
-        <div class="table-title">
-          📋 Данные таблицы
-          <span class="table-badge" id="cell-count">0 ячеек</span>
+  <div class="app-layout">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">
+          🔍 Фильтры
+          <span class="filter-count" id="filter-count">0</span>
         </div>
-        <div class="table-actions">
-          <button class="btn btn-secondary" onclick="addRow()" id="add-row-btn" disabled>+ Строка</button>
-          <button class="btn btn-danger" onclick="clearModified()" id="clear-btn" style="display:none;">✕ Сбросить</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearAllFilters()">Сбросить</button>
+      </div>
+      <div class="filters-list" id="filters-list">
+        <div class="empty-state" style="padding:30px 10px;">
+          <div style="font-size:28px;margin-bottom:8px;">🔍</div>
+          <div style="font-size:12px;color:var(--text-muted);">Загрузите данные для фильтрации</div>
         </div>
       </div>
-      <div class="table-wrapper">
-        <div id="table-container">
-          <div class="empty-state">
-            <div class="empty-icon">📊</div>
-            Подключитесь и загрузите таблицу
-          </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+      <!-- Results bar -->
+      <div class="results-bar">
+        <div class="results-count" id="results-count">Загрузите данные</div>
+        <div class="active-filters" id="active-filters-tags"></div>
+        <button class="btn btn-secondary btn-sm" onclick="addNewRow()" id="add-row-btn" style="display:none;">+ Новая запись</button>
+      </div>
+
+      <!-- Records -->
+      <div class="records-area" id="records-area">
+        <div class="empty-state">
+          <div class="empty-icon">📊</div>
+          <div class="empty-title">Нет загруженных данных</div>
+          <div class="empty-sub">Введите ID таблицы и нажмите «Загрузить»</div>
+        </div>
+      </div>
+
+      <!-- Save bar -->
+      <div class="save-bar" id="save-bar" style="display:none;">
+        <div class="save-info" id="save-info">Нет изменений</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-danger-ghost btn-sm" onclick="discardChanges()">✕ Отменить</button>
+          <button class="btn btn-success" onclick="saveAllChanges()" id="save-all-btn">💾 Сохранить всё</button>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="notification" id="notification">
-  <span class="notification-icon" id="notif-icon">✓</span>
-  <span id="notif-text"></span>
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span id="toast-icon">✓</span>
+  <span id="toast-text"></span>
 </div>
 
 <script>
-const CLIENT_SCOPE = 'https://www.googleapis.com/auth/spreadsheets';
-let tokenClient, gapiReady = false, tokenReady = false;
-let currentData = [], modifiedCells = new Set();
-let currentRange = '', currentSheetId = '';
+// ── STATE ──
+let allData = [], headers = [], filteredData = [], activeFilters = {}, pendingChanges = {};
+let currentSheetId = '', currentRange = '';
+let gapiReady = false, tokenReady = false, tokenClient;
 
-function showNotif(msg, type='success') {
-  const n = document.getElementById('notification');
-  document.getElementById('notif-icon').textContent = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
-  document.getElementById('notif-text').textContent = msg;
-  n.className = 'notification show ' + type;
-  setTimeout(() => n.className = 'notification', 3000);
+document.getElementById('origin-hint').textContent = location.origin;
+
+// ── TOAST ──
+function toast(msg, type='success') {
+  const el = document.getElementById('toast');
+  const icons = { success:'✓', error:'✕', warning:'⚠' };
+  document.getElementById('toast-icon').textContent = icons[type]||'ℹ';
+  document.getElementById('toast-text').textContent = msg;
+  el.className = 'toast show ' + type;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.className = 'toast', 3200);
 }
 
+// ── STATUS ──
 function setStatus(text, state='') {
+  const pill = document.getElementById('status-pill');
   document.getElementById('status-text').textContent = text;
-  const dot = document.getElementById('status-dot');
-  dot.className = 'status-dot ' + state;
+  pill.className = 'status-pill ' + state;
 }
 
-async function initAndAuth() {
-  const clientId = document.getElementById('client-id-input').value.trim();
-  const apiKey = document.getElementById('api-key-input').value.trim();
-
-  if (!clientId || !apiKey) {
-    showNotif('Введите Client ID и API Key', 'error');
-    return;
-  }
-
-  localStorage.setItem('gs_client_id', clientId);
-  localStorage.setItem('gs_api_key', apiKey);
-
-  loadGoogleAPIs(clientId, apiKey);
+// ── AUTH ──
+function initAuth() {
+  const cid = document.getElementById('client-id-input').value.trim();
+  const key = document.getElementById('api-key-input').value.trim();
+  if (!cid || !key) { toast('Введите Client ID и API Key', 'error'); return; }
+  localStorage.setItem('gs_cid', cid);
+  localStorage.setItem('gs_key', key);
+  loadGoogleLibs(cid, key);
 }
 
-function loadGoogleAPIs(clientId, apiKey) {
-  const gapiScript = document.createElement('script');
-  gapiScript.src = 'https://apis.google.com/js/api.js';
-  gapiScript.onload = () => {
-    gapi.load('client', async () => {
-      await gapi.client.init({ apiKey, discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'] });
-      gapiReady = true;
-      tryAuth(clientId);
-    });
-  };
-  document.head.appendChild(gapiScript);
+function loadGoogleLibs(cid, key) {
+  const s1 = document.createElement('script');
+  s1.src = 'https://apis.google.com/js/api.js';
+  s1.onload = () => gapi.load('client', async () => {
+    await gapi.client.init({ apiKey: key, discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'] });
+    gapiReady = true;
+    if (tokenReady) showApp();
+  });
+  document.head.appendChild(s1);
 
-  const gisScript = document.createElement('script');
-  gisScript.src = 'https://accounts.google.com/gsi/client';
-  gisScript.onload = () => {
+  const s2 = document.createElement('script');
+  s2.src = 'https://accounts.google.com/gsi/client';
+  s2.onload = () => {
     tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: clientId,
-      scope: CLIENT_SCOPE,
-      callback: (resp) => {
-        if (resp.error) { showNotif('Ошибка авторизации: ' + resp.error, 'error'); return; }
+      client_id: cid,
+      scope: 'https://www.googleapis.com/auth/spreadsheets',
+      callback: (r) => {
+        if (r.error) { toast('Ошибка авторизации: ' + r.error, 'error'); return; }
         tokenReady = true;
-        showMainApp();
+        if (gapiReady) showApp();
       }
     });
-  };
-  document.head.appendChild(gisScript);
-}
-
-function tryAuth(clientId) {
-  if (tokenClient) {
     tokenClient.requestAccessToken({ prompt: 'consent' });
-  }
+  };
+  document.head.appendChild(s2);
 }
 
-function showMainApp() {
+function showApp() {
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('main-app').style.display = 'block';
   document.getElementById('sign-out-btn').style.display = 'inline-flex';
-  setStatus('Авторизован. Введите ID таблицы.', 'connected');
-  showNotif('Успешно подключено к Google!');
+  toast('Авторизация успешна!');
 }
 
 function signOut() {
-  google.accounts.oauth2.revoke(gapi.client.getToken()?.access_token, () => {});
+  const t = gapi.client.getToken();
+  if (t) google.accounts.oauth2.revoke(t.access_token, () => {});
   gapi.client.setToken(null);
   tokenReady = false;
   document.getElementById('auth-screen').style.display = 'flex';
   document.getElementById('main-app').style.display = 'none';
   document.getElementById('sign-out-btn').style.display = 'none';
+  allData = []; headers = []; filteredData = []; activeFilters = {}; pendingChanges = {};
 }
 
-async function loadSheet() {
-  const id = document.getElementById('spreadsheet-id').value.trim();
-  if (!id) { showNotif('Введите ID таблицы', 'error'); return; }
-  if (!tokenReady) { showNotif('Сначала авторизуйтесь', 'error'); return; }
-
-  currentSheetId = extractSheetId(id);
+// ── LOAD DATA ──
+async function loadData() {
+  if (!tokenReady) { toast('Сначала авторизуйтесь', 'error'); return; }
+  const rawId = document.getElementById('spreadsheet-id').value.trim();
+  if (!rawId) { toast('Введите ID таблицы', 'error'); return; }
+  currentSheetId = extractId(rawId);
   document.getElementById('spreadsheet-id').value = currentSheetId;
-  await loadRange();
-}
-
-function extractSheetId(input) {
-  const m = input.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-  return m ? m[1] : input;
-}
-
-async function loadRange() {
-  if (!currentSheetId) { showNotif('Сначала загрузите таблицу', 'error'); return; }
   const sheet = document.getElementById('sheet-name').value || 'Sheet1';
-  const range = document.getElementById('range-input').value || 'A1:Z100';
+  const range = document.getElementById('range-input').value || 'A1:Z500';
   currentRange = `${sheet}!${range}`;
 
-  setStatus('Загрузка данных...', 'loading');
+  setStatus('Загрузка...', 'loading');
+  document.getElementById('records-area').innerHTML = '<div class="loading-state"><div class="spin"></div> Загружаем данные...</div>';
+
   try {
-    const res = await gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId: currentSheetId,
-      range: currentRange,
+    const res = await gapi.client.sheets.spreadsheets.values.get({ spreadsheetId: currentSheetId, range: currentRange });
+    const rows = res.result.values || [];
+    if (!rows.length) { setStatus('Пусто', 'err'); renderEmpty('Данные не найдены'); return; }
+
+    // First row as headers
+    headers = rows[0].map((h, i) => h || colLetter(i));
+    allData = rows.slice(1).map((row, ri) => {
+      const obj = { _row: ri + 2 }; // +2 because row1=headers, 1-indexed
+      headers.forEach((h, ci) => obj[h] = row[ci] ?? '');
+      return obj;
     });
-    currentData = res.result.values || [];
-    modifiedCells.clear();
-    renderTable();
-    const cells = currentData.reduce((s, r) => s + r.length, 0);
-    setStatus(`Загружено: ${currentRange}`, 'connected');
-    document.getElementById('sheet-info').textContent = `${currentData.length} строк · ${cells} ячеек`;
-    document.getElementById('cell-count').textContent = `${cells} ячеек`;
-    document.getElementById('add-row-btn').disabled = false;
+
+    pendingChanges = {};
+    activeFilters = {};
+    buildFilters();
+    applyFilters();
+    setStatus(`Загружено ${allData.length} записей`, 'ok');
+    document.getElementById('add-row-btn').style.display = 'inline-flex';
+    toast(`Загружено ${allData.length} записей`);
   } catch(e) {
-    setStatus('Ошибка загрузки', 'error');
-    showNotif('Ошибка: ' + (e.result?.error?.message || e.message), 'error');
+    setStatus('Ошибка', 'err');
+    toast('Ошибка загрузки: ' + (e.result?.error?.message || e.message), 'error');
+    renderEmpty('Ошибка загрузки данных');
   }
 }
 
-function renderTable() {
-  const container = document.getElementById('table-container');
-  if (!currentData.length) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div>Данные не найдены в указанном диапазоне</div>';
+function extractId(s) {
+  const m = s.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  return m ? m[1] : s;
+}
+
+// ── FILTERS ──
+function buildFilters() {
+  const container = document.getElementById('filters-list');
+  container.innerHTML = '';
+
+  headers.forEach(col => {
+    const values = [...new Set(allData.map(r => String(r[col] ?? '')).filter(v => v !== ''))].sort();
+    const isSelect = values.length <= 50 && values.length > 0;
+    const card = document.createElement('div');
+    card.className = 'filter-card';
+    card.id = 'fc_' + col;
+
+    if (isSelect) {
+      card.innerHTML = `
+        <div class="filter-head" onclick="toggleFilter('${col}')">
+          <div class="filter-name">${col} <span class="filter-active-val" id="fav_${col}" style="display:none"></span></div>
+          <div class="filter-arrow">▼</div>
+        </div>
+        <div class="filter-body">
+          <input class="filter-search" placeholder="Поиск..." oninput="searchOptions('${col}', this.value)" />
+          <div class="filter-options" id="fo_${col}">
+            ${values.map(v => `<label class="filter-option"><input type="checkbox" value="${esc(v)}" onchange="onFilterChange('${col}')" /> ${v||'(пусто)'}</label>`).join('')}
+          </div>
+        </div>`;
+    } else {
+      card.innerHTML = `
+        <div class="filter-head" onclick="toggleFilter('${col}')">
+          <div class="filter-name">${col} <span class="filter-active-val" id="fav_${col}" style="display:none"></span></div>
+          <div class="filter-arrow">▼</div>
+        </div>
+        <div class="filter-body">
+          <input class="filter-text-input" placeholder="Поиск по тексту..." oninput="onTextFilter('${col}', this.value)" />
+        </div>`;
+    }
+
+    container.appendChild(card);
+  });
+}
+
+function esc(s) { return String(s).replace(/"/g,'&quot;'); }
+
+function toggleFilter(col) {
+  const card = document.getElementById('fc_' + col);
+  card.classList.toggle('open');
+}
+
+function searchOptions(col, q) {
+  const opts = document.querySelectorAll(`#fo_${col} .filter-option`);
+  opts.forEach(opt => {
+    const v = opt.querySelector('input').value.toLowerCase();
+    opt.style.display = v.includes(q.toLowerCase()) ? '' : 'none';
+  });
+}
+
+function onFilterChange(col) {
+  const checked = [...document.querySelectorAll(`#fo_${col} input:checked`)].map(el => el.value);
+  if (checked.length) {
+    activeFilters[col] = { type: 'select', values: checked };
+    const card = document.getElementById('fc_' + col);
+    card.classList.add('active');
+    const av = document.getElementById('fav_' + col);
+    av.style.display = ''; av.textContent = checked.length;
+  } else {
+    delete activeFilters[col];
+    document.getElementById('fc_' + col).classList.remove('active');
+    document.getElementById('fav_' + col).style.display = 'none';
+  }
+  applyFilters();
+  updateFilterTags();
+}
+
+function onTextFilter(col, val) {
+  if (val.trim()) {
+    activeFilters[col] = { type: 'text', value: val.trim() };
+    document.getElementById('fc_' + col).classList.add('active');
+    const av = document.getElementById('fav_' + col);
+    av.style.display = ''; av.textContent = '✓';
+  } else {
+    delete activeFilters[col];
+    document.getElementById('fc_' + col).classList.remove('active');
+    document.getElementById('fav_' + col).style.display = 'none';
+  }
+  applyFilters();
+  updateFilterTags();
+}
+
+function applyFilters() {
+  filteredData = allData.filter(row => {
+    return Object.entries(activeFilters).every(([col, f]) => {
+      const val = String(row[col] ?? '');
+      if (f.type === 'select') return f.values.includes(val);
+      if (f.type === 'text') return val.toLowerCase().includes(f.value.toLowerCase());
+      return true;
+    });
+  });
+
+  const count = Object.keys(activeFilters).length;
+  const fc = document.getElementById('filter-count');
+  fc.textContent = count; fc.className = 'filter-count' + (count ? ' show' : '');
+
+  document.getElementById('results-count').innerHTML = `Показано <strong>${filteredData.length}</strong> из ${allData.length} записей`;
+  renderRecords();
+}
+
+function updateFilterTags() {
+  const container = document.getElementById('active-filters-tags');
+  container.innerHTML = '';
+  Object.entries(activeFilters).forEach(([col, f]) => {
+    const label = f.type === 'select' ? f.values.slice(0,2).join(', ') + (f.values.length > 2 ? ` +${f.values.length-2}` : '') : f.value;
+    const tag = document.createElement('div');
+    tag.className = 'filter-tag';
+    tag.innerHTML = `<span>${col}: ${label}</span><span class="filter-tag-x" onclick="removeFilter('${col}')">×</span>`;
+    container.appendChild(tag);
+  });
+}
+
+function removeFilter(col) {
+  delete activeFilters[col];
+  // uncheck all
+  document.querySelectorAll(`#fo_${col} input`).forEach(el => el.checked = false);
+  document.getElementById('fc_' + col)?.classList.remove('active');
+  const av = document.getElementById('fav_' + col);
+  if (av) av.style.display = 'none';
+  applyFilters();
+  updateFilterTags();
+}
+
+function clearAllFilters() {
+  activeFilters = {};
+  document.querySelectorAll('.filter-card').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.filter-option input').forEach(el => el.checked = false);
+  document.querySelectorAll('.filter-active-val').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.filter-text-input').forEach(el => el.value = '');
+  document.getElementById('active-filters-tags').innerHTML = '';
+  document.getElementById('filter-count').className = 'filter-count';
+  applyFilters();
+}
+
+// ── RENDER RECORDS ──
+function renderRecords() {
+  const area = document.getElementById('records-area');
+  if (!filteredData.length) {
+    area.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">Ничего не найдено</div><div class="empty-sub">Попробуйте изменить фильтры</div></div>';
     return;
   }
 
-  const maxCols = Math.max(...currentData.map(r => r.length));
-  const cols = Array.from({length: maxCols}, (_, i) => colLetter(i));
+  area.innerHTML = '';
+  filteredData.forEach((row, idx) => {
+    const card = document.createElement('div');
+    card.className = 'record-card';
+    card.id = 'rec_' + row._row;
 
-  let html = '<table><thead><tr><th>#</th>';
-  cols.forEach(c => html += `<th>${c}</th>`);
-  html += '</tr></thead><tbody>';
+    const statusCol = headers.find(h => /статус|status/i.test(h));
+    const statusVal = statusCol ? row[statusCol] : '';
+    const badgeClass = getBadgeClass(statusVal);
+    const badge = statusVal ? `<span class="status-badge ${badgeClass}">${statusVal}</span>` : '';
 
-  currentData.forEach((row, ri) => {
-    html += `<tr><td class="row-num">${ri + 1}</td>`;
-    for (let ci = 0; ci < maxCols; ci++) {
-      const val = (row[ci] ?? '').replace(/"/g, '&quot;');
-      html += `<td><input class="cell-input" data-r="${ri}" data-c="${ci}" value="${val}" oninput="onCellChange(this)" /></td>`;
+    card.innerHTML = `
+      <div class="record-header">
+        <div class="record-num">ЗАПИСЬ № ${row._row - 1} ${badge}</div>
+        <div class="record-actions">
+          <button class="btn btn-ghost btn-sm" onclick="saveRow(${row._row})">💾 Сохранить</button>
+        </div>
+      </div>
+      <div class="record-fields">
+        ${headers.map(col => `
+          <div class="record-field">
+            <div class="field-col-name">${col}</div>
+            <textarea class="field-value-input" rows="1"
+              data-row="${row._row}" data-col="${col}"
+              oninput="onCellEdit(this)"
+              onkeydown="autoResize(this)"
+            >${escHtml(row[col] ?? '')}</textarea>
+          </div>
+        `).join('')}
+      </div>`;
+
+    area.appendChild(card);
+
+    // Auto-resize textareas
+    card.querySelectorAll('textarea').forEach(ta => {
+      ta.style.height = 'auto';
+      ta.style.height = ta.scrollHeight + 'px';
+    });
+
+    // Mark modified
+    if (pendingChanges[row._row]) {
+      card.classList.add('modified');
     }
-    html += '</tr>';
   });
-
-  html += '</tbody></table>';
-  container.innerHTML = html;
 }
 
-function colLetter(i) {
-  let l = '';
-  i++;
-  while (i > 0) {
-    l = String.fromCharCode(64 + (i % 26 || 26)) + l;
-    i = Math.floor((i - 1) / 26);
-  }
-  return l;
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function getBadgeClass(val) {
+  if (!val) return 'badge-gray';
+  const v = val.toLowerCase();
+  if (/устран|готов|выполн|закрыт|done|complete/i.test(v)) return 'badge-green';
+  if (/в работ|process|в процесс|pending/i.test(v)) return 'badge-yellow';
+  if (/откр|открыт|new|новый|не устран/i.test(v)) return 'badge-red';
+  return 'badge-blue';
 }
 
-function onCellChange(input) {
-  const r = +input.dataset.r, c = +input.dataset.c;
-  const key = `${r},${c}`;
-  if (!currentData[r]) currentData[r] = [];
-  currentData[r][c] = input.value;
-  modifiedCells.add(key);
-  input.classList.add('modified');
-  document.getElementById('save-btn').disabled = false;
-  document.getElementById('clear-btn').style.display = 'inline-flex';
+function autoResize(ta) {
+  setTimeout(() => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }, 0);
 }
 
-function addRow() {
-  currentData.push(Array(Math.max(...currentData.map(r => r.length), 1)).fill(''));
-  renderTable();
+function onCellEdit(ta) {
+  const rowNum = +ta.dataset.row;
+  const col = ta.dataset.col;
+  const val = ta.value;
+
+  // Update allData
+  const rec = allData.find(r => r._row === rowNum);
+  if (rec) rec[col] = val;
+
+  // Track change
+  if (!pendingChanges[rowNum]) pendingChanges[rowNum] = {};
+  pendingChanges[rowNum][col] = val;
+
+  ta.classList.add('changed');
+  document.getElementById('rec_' + rowNum)?.classList.add('modified');
+
+  autoResize(ta);
+  updateSaveBar();
 }
 
-function clearModified() {
-  loadRange();
-  document.getElementById('clear-btn').style.display = 'none';
-  document.getElementById('save-btn').disabled = true;
+function updateSaveBar() {
+  const count = Object.keys(pendingChanges).length;
+  const bar = document.getElementById('save-bar');
+  bar.style.display = count ? 'flex' : 'none';
+  document.getElementById('save-info').innerHTML = count
+    ? `Изменено записей: <strong>${count}</strong>`
+    : 'Нет изменений';
 }
 
-async function saveChanges() {
-  if (!currentSheetId) return;
-  setStatus('Сохранение...', 'loading');
-  const btn = document.getElementById('save-btn');
-  btn.disabled = true;
+// ── SAVE SINGLE ROW ──
+async function saveRow(rowNum) {
+  if (!pendingChanges[rowNum]) { toast('Нет изменений в этой записи', 'warning'); return; }
+  const rec = allData.find(r => r._row === rowNum);
+  if (!rec) return;
+
+  const rowValues = [headers.map(h => rec[h] ?? '')];
+  const sheet = document.getElementById('sheet-name').value || 'Sheet1';
+  const startCol = 'A';
+  const endCol = colLetter(headers.length - 1);
+  const range = `${sheet}!${startCol}${rowNum}:${endCol}${rowNum}`;
 
   try {
     await gapi.client.sheets.spreadsheets.values.update({
       spreadsheetId: currentSheetId,
-      range: currentRange,
+      range,
       valueInputOption: 'USER_ENTERED',
-      resource: { values: currentData },
+      resource: { values: rowValues }
     });
-    modifiedCells.clear();
-    document.querySelectorAll('.cell-input.modified').forEach(el => el.classList.remove('modified'));
-    document.getElementById('clear-btn').style.display = 'none';
-    setStatus('Сохранено успешно · ' + new Date().toLocaleTimeString(), 'connected');
-    showNotif('Данные успешно сохранены в Google Sheets!');
+    delete pendingChanges[rowNum];
+    const card = document.getElementById('rec_' + rowNum);
+    if (card) { card.classList.remove('modified'); card.classList.add('saved'); setTimeout(() => card.classList.remove('saved'), 2000); }
+    card?.querySelectorAll('.changed').forEach(el => el.classList.remove('changed'));
+    updateSaveBar();
+    toast('Запись сохранена!');
   } catch(e) {
-    setStatus('Ошибка сохранения', 'error');
-    showNotif('Ошибка сохранения: ' + (e.result?.error?.message || e.message), 'error');
-    btn.disabled = false;
+    toast('Ошибка сохранения: ' + (e.result?.error?.message || e.message), 'error');
   }
 }
 
-// Restore saved config
+// ── SAVE ALL ──
+async function saveAllChanges() {
+  if (!Object.keys(pendingChanges).length) return;
+  const btn = document.getElementById('save-all-btn');
+  btn.disabled = true; btn.textContent = '⏳ Сохранение...';
+
+  const requests = Object.keys(pendingChanges).map(rowNum => {
+    const rec = allData.find(r => r._row === +rowNum);
+    const rowValues = [headers.map(h => rec[h] ?? '')];
+    const sheet = document.getElementById('sheet-name').value || 'Sheet1';
+    const range = `${sheet}!A${rowNum}:${colLetter(headers.length-1)}${rowNum}`;
+    return gapi.client.sheets.spreadsheets.values.update({
+      spreadsheetId: currentSheetId, range,
+      valueInputOption: 'USER_ENTERED',
+      resource: { values: rowValues }
+    });
+  });
+
+  try {
+    await Promise.all(requests);
+    const count = Object.keys(pendingChanges).length;
+    pendingChanges = {};
+    document.querySelectorAll('.record-card.modified').forEach(c => { c.classList.remove('modified'); c.classList.add('saved'); setTimeout(() => c.classList.remove('saved'), 2000); });
+    document.querySelectorAll('.changed').forEach(el => el.classList.remove('changed'));
+    updateSaveBar();
+    toast(`Сохранено ${count} записей!`);
+  } catch(e) {
+    toast('Ошибка: ' + (e.result?.error?.message || e.message), 'error');
+  }
+
+  btn.disabled = false; btn.innerHTML = '💾 Сохранить всё';
+}
+
+function discardChanges() {
+  pendingChanges = {};
+  renderRecords();
+  updateSaveBar();
+  toast('Изменения отменены', 'warning');
+}
+
+// ── ADD ROW ──
+function addNewRow() {
+  const newRow = { _row: allData.length + 2 };
+  headers.forEach(h => newRow[h] = '');
+  allData.push(newRow);
+  activeFilters = {};
+  clearAllFilters();
+  applyFilters();
+  // scroll to bottom
+  setTimeout(() => {
+    const area = document.getElementById('records-area');
+    area.scrollTop = area.scrollHeight;
+  }, 100);
+  toast('Новая запись добавлена');
+}
+
+// ── UTILS ──
+function colLetter(i) {
+  let l = ''; i++;
+  while (i > 0) { l = String.fromCharCode(64 + (i % 26 || 26)) + l; i = Math.floor((i-1)/26); }
+  return l;
+}
+
+function renderEmpty(msg) {
+  document.getElementById('records-area').innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">${msg}</div></div>`;
+}
+
+// ── RESTORE SAVED KEYS ──
 window.addEventListener('DOMContentLoaded', () => {
-  const cid = localStorage.getItem('gs_client_id');
-  const key = localStorage.getItem('gs_api_key');
+  const cid = localStorage.getItem('gs_cid');
+  const key = localStorage.getItem('gs_key');
   if (cid) document.getElementById('client-id-input').value = cid;
   if (key) document.getElementById('api-key-input').value = key;
 });
